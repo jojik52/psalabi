@@ -1,0 +1,83 @@
+import argparse
+import random
+import string
+
+class Password:
+    def __init__(self, use_lowercase=True, use_uppercase=True,
+                 use_digits=True, use_punctuation=True):
+        self.use_lowercase = use_lowercase
+        self.use_uppercase = use_uppercase
+        self.use_digits = use_digits
+        self.use_punctuation = use_punctuation
+        self.character_sets = {
+            'lowercase': string.ascii_lowercase,
+            'uppercase': string.ascii_uppercase,
+            'digits': string.digits,
+            'punctuation': string.punctuation
+        }
+        self.required_characters = []
+        if self.use_lowercase:
+            self.required_characters.append(random.choice(self.character_sets['lowercase']))
+        if self.use_uppercase:
+            self.required_characters.append(random.choice(self.character_sets['uppercase']))
+        if self.use_digits:
+            self.required_characters.append(random.choice(self.character_sets['digits']))
+        if self.use_punctuation:
+            self.required_characters.append(random.choice(self.character_sets['punctuation']))
+
+    def generate_password(self, length):
+        if length < len(self.required_characters):
+            raise ValueError("Длина пароля должна быть не менее количества обязательных символов")
+        
+        password = self.required_characters[:]
+        all_characters = ''.join([
+            self.character_sets['lowercase'] if self.use_lowercase else '',
+            self.character_sets['uppercase'] if self.use_uppercase else '',
+            self.character_sets['digits'] if self.use_digits else '',
+            self.character_sets['punctuation'] if self.use_punctuation else ''
+        ])
+        
+        for _ in range(length - len(self.required_characters)):
+            password.append(random.choice(all_characters))
+        
+        random.shuffle(password)
+        return ''.join(password)
+
+def main():
+    parser = argparse.ArgumentParser(description='Генератор случайных паролей')
+    parser.add_argument('-n', '--number', type=int, default=1,
+                        help='кол-во паролей', metavar='N')
+    parser.add_argument('-l', '--length', type=int, default=8,
+                        help='длина пароля', metavar='L')
+    parser.add_argument('-d', '--include-digits',
+                        action='store_true', help=' цифры в пароле')
+    parser.add_argument('-lc', '--include-lowercase',
+                        action='store_true', help='английские строчные буквы в пароль')
+    parser.add_argument('-uc', '--include-uppercase',
+                        action='store_true', help='английские прописные буквы в пароль')
+    parser.add_argument('-p', '--include-punctuation',
+                        action='store_true', help='спец символы в пароль')
+
+    args = parser.parse_args()
+
+    if args.number < 1:
+        parser.error("Количество паролей должно быть 1 или больше.")
+    if args.length < 8:
+        parser.error("Длина пароля должна быть не менее 8 символов.")
+
+    password_generator = Password(
+        use_lowercase=args.include_lowercase,
+        use_uppercase=args.include_uppercase,
+        use_digits=args.include_digits,
+        use_punctuation=args.include_punctuation
+    )
+
+    for _ in range(args.number):
+        try:
+            generated_password = password_generator.generate_password(args.length)
+            print(f"ген пароль длинной {args.length} символов: {generated_password}")
+        except ValueError as e:
+            print(e)
+
+if __name__ == "__main__":
+    main()
