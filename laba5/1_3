@@ -1,0 +1,43 @@
+import random
+
+class Dice:
+    def __init__(self, num_sides=6, num_dice=1, seed=None):
+        if num_sides <= 0 or num_dice <= 0:
+            raise ValueError("Число граней и количество костей должны быть больше 0")
+        self.num_sides = num_sides
+        self.num_dice = num_dice
+        self.seed = seed
+        self.random_state = random.Random()
+        if seed is not None:
+            self.random_state.seed(seed)
+
+    def roll(self):
+        results = [self.random_state.randint(1, self.num_sides) for _ in range(self.num_dice)]
+        return results
+
+    def roll_as_tuple(self):
+        return tuple(self.roll())
+
+def conduct_experiment(num_dice, num_sides, num_rolls):
+    dice = Dice(num_sides=num_sides, num_dice=num_dice)
+    frequencies = {i: 0 for i in range(num_dice, num_dice * num_sides + 1)}
+
+    for _ in range(num_rolls):
+        roll_result = sum(dice.roll())
+        frequencies[roll_result] += 1
+    
+    return frequencies
+
+def print_statistics(frequencies, num_rolls):
+    for sum_value, frequency in frequencies.items():
+        probability = frequency / num_rolls
+        print(f"Сумма {sum_value}: Частота - {frequency}, Вероятность - {probability:.6f}")
+
+# Параметры эксперимента
+num_dice = 2
+num_sides = 6
+num_rolls = 10000000
+
+# Проведение эксперимента и вывод статистики
+frequencies = conduct_experiment(num_dice, num_sides, num_rolls)
+print_statistics(frequencies, num_rolls)
