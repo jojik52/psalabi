@@ -1,0 +1,51 @@
+from argparse import ArgumentParser
+import string
+import secrets
+
+# Настройка парсера аргументов
+parser = ArgumentParser(
+    prog='Генератор паролей.',
+    description='Генератор случайных паролей.'
+)
+parser.add_argument("-n", "--number", default=1, type=int,
+                    help="кол-во паролей")
+parser.add_argument("-l", "--length", default=5, type=int,
+                    help="длина пароля")
+parser.add_argument("-d", "--include-digits", action="store_true",
+                    help="цифры в пароле")
+parser.add_argument("-lc", "--include-lowercase", action="store_true",
+                    help="английские строчные буквы в пароль")
+parser.add_argument("-uc", "--include-uppercase", action="store_true",
+                    help="английские прописные буквы в пароль")
+
+# Парсинг аргументов
+args = parser.parse_args()
+
+# Проверка на корректность введенных данных
+if args.number < 1:
+    parser.error("кол-во паролей 1 и больше")
+if args.length < 5:
+    parser.error("длина пароля 5 и больше")
+
+# Формирование набора символов для пароля
+characters = ''
+if args.include_digits:
+    characters += string.digits
+if args.include_lowercase:
+    characters += string.ascii_lowercase
+if args.include_uppercase:
+    characters += string.ascii_uppercase
+
+# Проверка на наличие выбранных символов
+if not characters:
+    parser.error("хоть один набор символов")
+
+# Функция генерации пароля
+def generate_password(length, characters):
+    password = ''.join(secrets.choice(characters) for _ in range(length))
+    return password
+
+# Генерация и вывод паролей
+for _ in range(args.number):
+    password = generate_password(args.length, characters)
+    print(password)
