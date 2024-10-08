@@ -1,0 +1,43 @@
+import socket
+
+students = {
+    "Сверчков": "Темочка",
+    "Беликов": "Лещ",
+    "Бусыгин": "да да я",
+    "Чумазин": "Картограф",
+    "Мамелин": "Митяй",
+    "Селуков": "Егор",
+    "Воскресенский": "Никита",
+}
+
+def handle_client(client_socket, client_address):
+    try:
+        data = client_socket.recv(1024).decode().strip().lower()
+        print(f"Получено от клиента {client_address}: {data}")
+        
+        if data in [student.lower() for student in students]:
+            correct_family = next(student for student in students if student.lower() == data)
+            greeting = f"Привет, {students[correct_family]}"
+            client_socket.sendall(greeting.encode())
+        else:
+            error_message = "Ошибка: такой фамилии нет в списке."
+            client_socket.sendall(error_message.encode())
+    except Exception as e:
+        print(f"Ошибка обработки запроса: {e}")
+    finally:
+        client_socket.close()
+
+def main():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ('localhost', 12345)
+    server_socket.bind(server_address)
+    server_socket.listen(5)
+    print(f"Сервер запущен на {server_address[0]}:{server_address[1]}")
+    
+    while True:
+        client_socket, client_address = server_socket.accept()
+        print(f"Клиент подключился: {client_address}")
+        handle_client(client_socket, client_address)
+
+if __name__ == "__main__":
+    main()
