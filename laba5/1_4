@@ -1,0 +1,14 @@
+import random
+import string
+
+def generate_random_file_name(length, extension):
+    file_name = ''.join(random.choice(string.ascii_letters)
+                        for _ in range(length))
+    return f"{file_name}.{extension}"
+
+
+if  __name__  == "__main__":
+    length = 10
+    extension = "txt"
+    random_file_name=generate_random_file_name(length, extension)
+    print(f"Случайное имя файла: {random_file_name}")
