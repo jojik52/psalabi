@@ -1,0 +1,50 @@
+import string
+import secrets
+
+def generate_password(length, characters):
+    password = ''.join(secrets.choice(characters) for _ in range(length))
+    return password
+
+def main():
+    while True:
+        try:
+            number = int(input("кол-во ген. паролей: "))
+            if number < 1:
+                print("кол-во псвордов больше 1")
+            else:
+                break
+        except ValueError:
+            print("введите целое число!")
+
+    while True:
+        try:
+            length = int(input("длина пароля?(не менее 5): "))
+            if length < 5:
+                print("надо 5 и больше.")
+            else:
+                break
+        except ValueError:
+            print("введите целое число!")
+
+    include_digits = input("цифры в пароль? (да/нет): ").lower() == 'да'
+    include_lowercase = input(" английские строчные буквы в пароль? (да/нет): ").lower() == 'да'
+    include_uppercase = input(" английские прописные буквы в пароль? (да/нет): ").lower() == 'да'
+
+    characters = ''
+    if include_digits:
+        characters += string.digits
+    if include_lowercase:
+        characters += string.ascii_lowercase
+    if include_uppercase:
+        characters += string.ascii_uppercase
+
+    if not characters:
+        print("надо выбрать одно надо надо .")
+        return
+
+    for _ in range(number):
+        password = generate_password(length, characters)
+        print(password)
+
+if __name__ == "__main__":
+    main()
