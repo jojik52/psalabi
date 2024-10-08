@@ -1,0 +1,28 @@
+import random
+
+
+ 
+class Dice:
+    def  __init__ (self, num_sides=6,num_dice=1):
+ 
+        if num_sides <= 0 or num_dice <= 0:
+            raise ValueError("грани и кости должны быть больше 0")
+        self.num_sides = num_sides
+        self.num_dice = num_dice
+
+    def roll(self):
+        results = [random.randint(1, self.num_sides) for _ in range(self.num_dice)]
+        return results
+
+
+    def roll_as_tuple(self):
+        return tuple(self.roll())
+
+dice = Dice(num_sides=6, num_dice=2)
+print(dice.roll()) # Возвращает список
+
+# Бросок одной кости 20 граней
+dice_20 = Dice(num_sides=20, num_dice=1)
+print(dice_20.roll())
+
+# Бросок четырех костей с 8-ю гранями
