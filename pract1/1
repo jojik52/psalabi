@@ -1,0 +1,23 @@
+def find(a1, b1, a2, b2): 
+    left = max(a1, a2)
+    right = min(b1, b2)
+
+ 
+    if left <= right:
+        
+        if left == right:
+            return f"точка {left}"
+        else:
+            return f"[{left}, {right}]"
+    else:
+       
+        return "пустое множество"
+
+
+a1 = int(input("Введите левую границу первого отрезка: "))
+b1 = int(input("Введите правую границу первого отрезка: "))
+a2 = int(input("Введите левую границу второго отрезка: "))
+b2 = int(input("Введите правую границу второго отрезка: "))
+
+result = find(a1, b1, a2, b2)
+print(result)
