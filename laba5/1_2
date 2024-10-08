@@ -1,0 +1,32 @@
+import random
+
+
+ 
+class Dice:
+    def  __init__ (self, num_sides=6,num_dice=1,seed=None):
+ 
+        if num_sides <= 0 or num_dice <= 0:
+            raise ValueError("Число граней и количество костей должны быть больше 0")
+        self.num_sides = num_sides
+        self.num_dice = num_dice
+        self.seed = seed
+        self.random_state = random.Random()
+        if seed is not None:
+            self.random_state.seed(seed)
+
+
+    def roll(self):
+        results = [self.random_state.randint(1, self.num_sides)
+for _ in range(self.num_dice)]
+        return results
+
+
+    def roll_as_tuple(self):
+        return tuple(self.roll())
+
+d1 = Dice(seed=999)
+d2 = Dice(seed=999)
+
+print(*d1.roll(), *d2.roll())
+print(*d1.roll(), *d2.roll())
+print(*d1.roll(), *d2.roll())
