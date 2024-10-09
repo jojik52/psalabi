@@ -1,0 +1,14 @@
+import http.client
+import ssl
+
+context = ssl.create_default_context()
+conn = http.client.HTTPSConnection("github.com", context=context)
+
+conn.request("GET","/jojik52/psalabi/blob/main/laba5/1_4")
+response = conn.getresponse()
+
+print(f"Status: {response.status} and reason: {response.reason}")
+data = response.read().decode()
+print(data)
+
+conn.close()
