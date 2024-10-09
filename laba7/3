@@ -1,0 +1,43 @@
+import requests
+from bs4 import BeautifulSoup
+import os
+
+def download_images(url, output_dir):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка при загрузке страницы: {e}")
+        return
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    images = soup.find_all('img')
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    for i, image in enumerate(images):
+        image_url = image.get('src')
+        if image_url:
+            # Проверяем, является ли URL абсолютным или относительным
+            if not image_url.startswith('http'):
+                base_url = url.rsplit('/', 1)[0]
+                image_url = f"{base_url}{image_url}" if image_url.startswith('/') else f"{base_url}/{image_url}"
+
+            try:
+                print(f"Загрузка изображения: {image_url}")  # Логирование URL
+                image_response = requests.get(image_url)
+                image_response.raise_for_status()
+
+                filename = f"image_{i+1}.jpg"
+                filepath = os.path.join(output_dir, filename)
+                with open(filepath, 'wb') as file:
+                    file.write(image_response.content)
+                print(f"Изображение {filename} сохранено")
+            except Exception as e:
+                print(f"Ошибка при загрузке изображения {image_url}: {e}")
+
+if __name__ == "__main__":
+    url = "https://pnzgu.ru/news/2024/10/3"
+    output_dir = "/home/stud/ПСА/lab7"
+    download_images(url, output_dir)
