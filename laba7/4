@@ -12,36 +12,36 @@ def download_images_from_page(url, visited):
 
     try:
         response = requests.get(url)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            os.makedirs('images', exist_ok=True)
+        response.raise_for_status()  # Проверка на ошибки HTTP
 
-            images = soup.find_all('img')
-            for img in images:
-                img_url = img.get('src')
-                if img_url:
-                    img_url = urljoin(url, img_url)  
-                    img_name = os.path.join('images', img_url.split('/')[-1])
+        soup = BeautifulSoup(response.text, 'html.parser')
+        os.makedirs('images', exist_ok=True)
 
+        images = soup.find_all('img')
+        for img in images:
+            img_url = img.get('src')
+            if img_url:
+                img_url = urljoin(url, img_url)  
+                img_name = os.path.join('images', os.path.basename(img_url))
+
+                try:
                     img_response = requests.get(img_url)
-                    if img_response.status_code == 200:
-                        with open(img_name, 'wb') as f:
-                            f.write(img_response.content)
-                        print(f"Сохранено: {img_name}")
-                    else:
-                        print(f"Ошибка при загрузке изображения: {img_url} (статус {img_response.status_code})")
+                    img_response.raise_for_status()  # Проверка на ошибки HTTP при загрузке изображения
+                    
+                    with open(img_name, 'wb') as f:
+                        f.write(img_response.content)
+                    print(f"Сохранено: {img_name}")
+                except requests.exceptions.RequestException as e:
+                    print(f"Ошибка при загрузке изображения: {img_url} - {e}")
 
-            links = soup.find_all('a', href=True)
-            for link in links:
-                link_url = link['href']
-                link_url = urljoin(url, link_url) 
-                download_images_from_page(link_url, visited) 
-
-        else:
-            print(f"Ошибка при загрузке страницы: {response.status_code}")
+        links = soup.find_all('a', href=True)
+        for link in links:
+            link_url = link['href']
+            link_url = urljoin(url, link_url) 
+            download_images_from_page(link_url, visited) 
 
     except requests.exceptions.RequestException as e:
-        print(f"Произошла ошибка: {e}")
+        print(f"Ошибка при загрузке страницы: {e}")
 
 start_url = "http://rokot.ibst.psu/anatoly/"
 visited_urls = set()  
