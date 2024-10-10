@@ -1,14 +1,15 @@
-import http.client
-import ssl
+import requests
 
-context = ssl.create_default_context()
-conn = http.client.HTTPSConnection("github.com", context=context)
+url = "http://rokot.ibst.psu/anatoly/"
 
-conn.request("GET","/jojik52/psalabi/blob/main/laba5/1_4")
-response = conn.getresponse()
+try:
+    response = requests.get(url)
 
-print(f"Status: {response.status} and reason: {response.reason}")
-data = response.read().decode()
-print(data)
+    if response.status_code == 200:
+        print("Страница загружена успешно!")
+        print(response.text)
+    else:
+        print(f"Ошибка при загрузке страницы: {response.status_code}")
 
-conn.close()
+except requests.exceptions.RequestException as e:
+    print(f"Произошла ошибка: {e}")
