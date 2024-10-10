@@ -2,42 +2,37 @@ import requests
 from bs4 import BeautifulSoup
 import os
 
-def download_images(url, output_dir):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        print(f"Ошибка при загрузке страницы: {e}")
-        return
+url = "http://rokot.ibst.psu/anatoly/"
 
-    soup = BeautifulSoup(response.content, 'html.parser')
-    images = soup.find_all('img')
+try:
+    response = requests.get(url)
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if response.status_code == 200:
+        print("Страница загружена успешно!")
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        os.makedirs('images', exist_ok=True)
 
-    for i, image in enumerate(images):
-        image_url = image.get('src')
-        if image_url:
-            # Проверяем, является ли URL абсолютным или относительным
-            if not image_url.startswith('http'):
-                base_url = url.rsplit('/', 1)[0]
-                image_url = f"{base_url}{image_url}" if image_url.startswith('/') else f"{base_url}/{image_url}"
+        images = soup.find_all('img')
 
-            try:
-                print(f"Загрузка изображения: {image_url}")  # Логирование URL
-                image_response = requests.get(image_url)
-                image_response.raise_for_status()
+        for img in images:
+            img_url = img.get('src')
+            if img_url:
+                if not img_url.startswith('http'):
+                    img_url = requests.compat.urljoin(url, img_url)
+                
+                img_name = os.path.join('images', img_url.split('/')[-1])
 
-                filename = f"image_{i+1}.jpg"
-                filepath = os.path.join(output_dir, filename)
-                with open(filepath, 'wb') as file:
-                    file.write(image_response.content)
-                print(f"Изображение {filename} сохранено")
-            except Exception as e:
-                print(f"Ошибка при загрузке изображения {image_url}: {e}")
+                img_response = requests.get(img_url)
+                if img_response.status_code == 200:
+                    with open(img_name, 'wb') as f:
+                        f.write(img_response.content)
+                    print(f"Сохранено: {img_name}")
+                else:
+                    print(f"Ошибка при загрузке изображения: {img_url} (статус {img_response.status_code})")
+    else:
+        print(f"Ошибка при загрузке страницы: {response.status_code}")
 
-if __name__ == "__main__":
-    url = "https://pnzgu.ru/news/2024/10/3"
-    output_dir = "/home/stud/ПСА/lab7"
-    download_images(url, output_dir)
+except requests.exceptions.RequestException as e:
+    print(f"Произошла ошибка: {e}")
