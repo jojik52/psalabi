@@ -4,12 +4,12 @@ url = "http://rokot.ibst.psu/anatoly/"
 
 try:
     response = requests.get(url)
+    response.raise_for_status()  # Вызывает исключение для статусов 4xx и 5xx
 
-    if response.status_code == 200:
-        print("Страница загружена успешно!")
-        print(response.text)
-    else:
-        print(f"Ошибка при загрузке страницы: {response.status_code}")
+    print("Страница загружена успешно!")
+    print(response.text)
 
-except requests.exceptions.RequestException as e:
-    print(f"Произошла ошибка: {e}")
+except requests.exceptions.HTTPError as http_err:
+    print(f"HTTP ошибка: {http_err}")
+except requests.exceptions.RequestException as req_err:
+    print(f"Произошла ошибка: {req_err}")
