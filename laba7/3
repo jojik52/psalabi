@@ -6,33 +6,33 @@ url = "http://rokot.ibst.psu/anatoly/"
 
 try:
     response = requests.get(url)
+    response.raise_for_status()  # Проверка на ошибки HTTP
 
-    if response.status_code == 200:
-        print("Страница загружена успешно!")
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        os.makedirs('images', exist_ok=True)
+    print("Страница загружена успешно!")
+    
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    os.makedirs('images', exist_ok=True)
 
-        images = soup.find_all('img')
+    images = soup.find_all('img')
 
-        for img in images:
-            img_url = img.get('src')
-            if img_url:
-                if not img_url.startswith('http'):
-                    img_url = requests.compat.urljoin(url, img_url)
-                
-                img_name = os.path.join('images', img_url.split('/')[-1])
+    for img in images:
+        img_url = img.get('src')
+        if img_url:
+            # Приведение относительных URL к абсолютным
+            img_url = requests.compat.urljoin(url, img_url)
+            
+            img_name = os.path.join('images', os.path.basename(img_url))
 
+            try:
                 img_response = requests.get(img_url)
-                if img_response.status_code == 200:
-                    with open(img_name, 'wb') as f:
-                        f.write(img_response.content)
-                    print(f"Сохранено: {img_name}")
-                else:
-                    print(f"Ошибка при загрузке изображения: {img_url} (статус {img_response.status_code})")
-    else:
-        print(f"Ошибка при загрузке страницы: {response.status_code}")
+                img_response.raise_for_status()  # Проверка на ошибки HTTP при загрузке изображения
+                
+                with open(img_name, 'wb') as f:
+                    f.write(img_response.content)
+                print(f"Сохранено: {img_name}")
 
+            except requests.exceptions.RequestException as e:
+                print(f"Ошибка при загрузке изображения: {img_url} (статус {img_response.status_code}) - {e}")
 except requests.exceptions.RequestException as e:
-    print(f"Произошла ошибка: {e}")
+    print(f"Произошла ошибка при загрузке страницы: {e}")
