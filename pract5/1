@@ -1,0 +1,49 @@
+import random
+
+def polyalphabetic_cipher(text, alphabet, key, mode):
+    random.seed(key)
+    
+    # Сохраняем пробелы и другие символы
+    result = ''
+    shifts = []
+    
+    for char in text.upper():
+        if char in alphabet:
+            index = alphabet.index(char)
+            shift = random.randrange(len(alphabet))
+            shifts.append(shift)
+            
+            if mode == 'encrypt':
+                new_index = (index + shift) % len(alphabet)
+            elif mode == 'decrypt':
+                new_index = (index - shift) % len(alphabet)
+            
+            result += alphabet[new_index]
+        else:
+            result += char  # Сохраняем символ как есть
+    
+    return result
+
+def encrypt(text, alphabet, key):
+    return polyalphabetic_cipher(text, alphabet, key, 'encrypt')
+
+def decrypt(ciphertext, alphabet, key):
+    return polyalphabetic_cipher(ciphertext, alphabet, key, 'decrypt')
+
+alphabet = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
+key = 27092
+
+text = 'Здравствуйте , Василий Валерьевич '
+ciphertext = encrypt(text, alphabet, key)
+print(f"Зашифрованный текст: {ciphertext}")
+
+decrypted_text = decrypt(ciphertext, alphabet, key)
+print(f"Расшифрованный текст: {decrypted_text}")
+
+key = 77777
+text = 'ЖИЖА - Это Георгий Бусыгин'
+ciphertext = encrypt(text, alphabet, key)
+print(f"Зашифрованный текст: {ciphertext}")
+
+decrypted_text = decrypt(ciphertext, alphabet, key)
+print(f"Расшифрованный текст: {decrypted_text}")
