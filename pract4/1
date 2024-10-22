@@ -1,0 +1,85 @@
+from datetime import datetime
+
+def parse_log_line(line):
+    parts = line.split()
+    remote_addr = parts[0]
+    remote_user = parts[1] if len(parts) > 1 else '-'
+    time_local = ' '.join(parts[3:5]).strip('[]')
+    request = ' '.join(parts[5:8])
+
+    try:
+        status = int(parts[8])
+    except (IndexError, ValueError):
+        status = 0
+
+    try:
+        response_size = int(parts[9])
+    except (IndexError, ValueError):
+        response_size = 0
+
+    referer = parts[10] if len(parts) > 10 else '-'
+    user_agent = ' '.join(parts[11:]) if len(parts) > 11 else '-'
+    
+    request_type, rest = request.split(' ', 1) if ' ' in request else (request, '')
+    
+    return {
+        'remote_addr': remote_addr,
+        'remote_user': remote_user,
+        'time_local': time_local,
+        'request': request,
+        'status': status,
+        'type': request_type,
+        'rest': rest,
+        'referer': referer,
+        'user_agent': user_agent,
+        'response_size': response_size,
+        'original_line': line
+    }
+
+def main():
+    ip_counts = {}
+    ip_status_counts = {}
+    previous_entries = {}
+    attack_entries = []
+
+    with open('log.txt', 'r') as file:
+        for line in file:
+            line = line.strip()
+            if not line:
+                continue
+            
+            log_entry = parse_log_line(line)
+
+            if log_entry['type'] not in ['GET', 'POST']:
+                attack_entries.append((log_entry['remote_addr'], log_entry['original_line']))
+
+            if log_entry['remote_addr'] in previous_entries:
+                prev_entry = previous_entries[log_entry['remote_addr']]
+                t1 = datetime.strptime(log_entry['time_local'], "%d/%b/%Y:%H:%M:%S %z")
+                t2 = datetime.strptime(prev_entry['time_local'], "%d/%b/%Y:%H:%M:%S %z")
+                delta = t2 - t1
+                
+                if abs(delta.total_seconds()) <= 1:
+                    attack_entries.append((log_entry['remote_addr'], log_entry['original_line']))
+
+            if log_entry['remote_addr'] in ip_status_counts:
+                ip_status_counts[log_entry['remote_addr']].append(log_entry['status'])
+            else:
+                ip_status_counts[log_entry['remote_addr']] = [log_entry['status']]
+
+            if log_entry['remote_addr'] in previous_entries and previous_entries[log_entry['remote_addr']]['status'] >= 400 and log_entry['status'] >= 400:
+                attack_entries.append((log_entry['remote_addr'], log_entry['original_line']))
+            
+            previous_entries[log_entry['remote_addr']] = log_entry
+            
+            ip_counts[log_entry['remote_addr']] = ip_counts.get(log_entry['remote_addr'], 0) + 1
+
+    for ip, count in ip_counts.items():
+        if count > 5:
+            attack_entries.append((ip, previous_entries[ip]['original_line']))
+
+    for ip, log_line in attack_entries:
+        print(f"Attack detected from IP: {ip} | Log line: {log_line.strip()}")
+
+if __name__ == "__main__":
+    main()
